@@ -3,20 +3,21 @@ import { db } from '../firebase'
 import { collection, onSnapshot, addDoc, doc, deleteDoc} from 'firebase/firestore';
 
 
-
-
 const Formulario = () => {
-    const[fruta, setFruta] = useState('');
-    const[descripcion, setDescription] = useState('');
-    const[listaFrutas, setListaFrutas] = useState([])
+    const[usuario, setUsuario] = useState('');
+    const[nombre, setNombre] = useState('');
+    const[telefono, setTelefono] = useState('');
+    const[direccion, setDireccion] = useState('');
+    const[email, setEmail] = useState('');
+    const[listaUsuario, setListaUsuarios] = useState([])
 
     useEffect(()=>{
 
         const obtenerDatos = async() => {
 
         try {
-            await onSnapshot(collection(db,'frutas'),(snapshot)=>{
-                setListaFrutas(snapshot.docs.map((doc) =>({... doc.data(), id:doc.id})))
+            await onSnapshot(collection(db,'usuarios'),(snapshot)=>{
+                setListaUsuarios(snapshot.docs.map((doc) =>({... doc.data(), id:doc.id})))
             });  
         } catch (error){
             console.log(error);
@@ -28,30 +29,36 @@ const Formulario = () => {
 
     const eliminar = async id => {
         try {
-          await deleteDoc(doc(db,'frutas',id))
+          await deleteDoc(doc(db,'usuarios',id))
         } catch (error) {
             console.log(error)
         }
     }
 
-    const guardarFrutas = async(e) =>{
+    const guardarUsuario = async(e) =>{
         e.preventDefault()
 
         try {
 
            
-            const data = await addDoc(collection(db, 'frutas'),{
-                nombreFruta: fruta,
-                nombreDescripcion: descripcion
+            const data = await addDoc(collection(db, 'usuarios'),{
+                dataUsuario: usuario,
+                dataNombre: nombre,
+                dataTelefono: telefono,
+                dataDireccion: direccion,
+                dataEmail: email
             })
 
-            setListaFrutas([
-                ...listaFrutas,
-                {nombreFruta:fruta, nombreDescripcion:descripcion, id:data.id}
+            setListaUsuarios([
+                ...listaUsuario,
+                {dataUsuario:usuario, dataNombre: nombre, dataTelefono: telefono, dataDireccion: direccion, dataEmail: email}
             ])
 
-            setFruta('')
-            setDescription('')
+            setUsuario('')
+            setNombre('')
+            setTelefono('')
+            setDireccion('')
+            setEmail('')
             e.target.reset()
             
         } catch (error) {
@@ -65,12 +72,12 @@ const Formulario = () => {
         <hr/>
         <div className='row'>
             <div className='col-8'>
-                <h4 className='text-center'>Listado de Frutas</h4>
+                <h4 className='text-center'>Listado de Usuarios</h4>
                 <ul className='list-group'>
                     {
-                        listaFrutas.map(item =>(
+                        listaUsuario.map(item =>(
                             <li className='list-group-item' key={item.id}>
-                                <span className='lead'>{item.nombreFruta} - {item.nombreDescripcion}</span>
+                                <span className='lead'>{item.dataUsuario} - {item.dataNombre} - {item.dataTelefono} - {item.dataDireccion} - {item.dataEmail}</span>
                                 <button className='btn btn-danger btn-sm float-end mx-2' onClick={()=>eliminar(item.id)}>Eliminar</button>
                             </li>
                         ))
@@ -79,14 +86,20 @@ const Formulario = () => {
             </div>
         <div className='col-4'>
         <h4 className='text-center'>
-            Agregar Frutas
+            Agregar Usuarios
         </h4>
         
-        <form onSubmit={guardarFrutas}>
-          <input className='form-control mb-2' type="text" placeholder='Ingrese Fruta' 
-          value={fruta} onChange={(e)=>setFruta(e.target.value)}></input>
-          <input className='form-control mb-2' type="text" placeholder='Ingrese Descripcion' 
-          value={descripcion} onChange={(e)=>setDescription(e.target.value)}></input>
+        <form onSubmit={guardarUsuario}>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Usuario' 
+          value={usuario} onChange={(e)=>setUsuario(e.target.value)} required></input>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Nombre' 
+          value={nombre} onChange={(e)=>setNombre(e.target.value)} required></input>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Telefono' 
+          value={telefono} onChange={(e)=>setTelefono(e.target.value)} required></input>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Direccion' 
+          value={direccion} onChange={(e)=>setDireccion(e.target.value)} required></input>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Email' 
+          value={email} onChange={(e)=>setEmail(e.target.value)} required></input>
           <button className='btn btn-primary btn-block' type='submit'>Agregar</button>
         </form>
         </div>

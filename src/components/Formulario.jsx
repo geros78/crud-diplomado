@@ -1,6 +1,7 @@
-import { async } from '@firebase/util';
 import React, { useState } from 'react'
-import { firebase } from '../firebase';
+import { db } from '../firebase'
+import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+
 
 const Formulario = () => {
     const[fruta, setFruta] = useState('');
@@ -9,18 +10,22 @@ const Formulario = () => {
 
     const guardarFrutas = async(e) =>{
         e.preventDefault()
+
         try {
-            const db = firebase.firestore()
+
             const nuevaFruta ={
                 nombreFruta: fruta,
                 nombreDescripcion: descripcion
             }
 
-            await db.colecion('frutas').add(nuevaFruta)
+            await addDoc(collection(db, 'frutas'),{
+                frutas:nuevaFruta 
+            })
             setListaFrutas([
                 ...listaFrutas,
                 {nombreFruta:fruta, nombreDescripcion:descripcion}
             ])
+            
         } catch (error) {
             console.log(error)
         }
@@ -43,9 +48,11 @@ const Formulario = () => {
         </h4>
         
         <form onSubmit={guardarFrutas}>
-          <input className='form-control mb-2' type="text" placeholder='Ingrese Fruta' value={fruta}></input>
-          <input className='form-control mb-2' type="text" placeholder='Ingrese Descripcion' value={descripcion}></input>
-          <button className='btn btn-primary btn-block'>Agregar</button>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Fruta' 
+          value={fruta} onChange={(e)=>setFruta(e.target.value)}></input>
+          <input className='form-control mb-2' type="text" placeholder='Ingrese Descripcion' 
+          value={descripcion} onChange={(e)=>setDescription(e.target.value)}></input>
+          <button className='btn btn-primary btn-block' type='submit'>Agregar</button>
         </form>
         </div>
     </div>

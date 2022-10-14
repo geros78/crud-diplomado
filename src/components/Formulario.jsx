@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { db } from '../firebase'
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, doc, deleteDoc} from 'firebase/firestore';
+import { async } from '@firebase/util';
+
 
 
 const Formulario = () => {
@@ -9,11 +11,28 @@ const Formulario = () => {
     const[listaFrutas, setListaFrutas] = useState([])
 
     useEffect(()=>{
-        onSnapshot(collection(db,'frutas'),(snapshot)=>{
-            setListaFrutas(snapshot.docs.map(doc =>doc.data()))
+
+        const obtenerDatos = async() => {
+
+        try {
+            await onSnapshot(collection(db,'frutas'),(snapshot)=>{
+                setListaFrutas(snapshot.docs.map((doc) =>({... doc.data(), id:doc.id})))
+            });  
+        } catch (error){
+            console.log(error);
         }
-        ) 
-    }, [fruta])
+
+    };
+    obtenerDatos();
+    }, []);
+
+    const eliminar = async id => {
+        try {
+          await deleteDoc(doc(db,'frutas',id))
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const guardarFrutas = async(e) =>{
         e.preventDefault()
@@ -21,13 +40,14 @@ const Formulario = () => {
         try {
 
            
-            await addDoc(collection(db, 'frutas'),{
+            const data = await addDoc(collection(db, 'frutas'),{
                 nombreFruta: fruta,
                 nombreDescripcion: descripcion
             })
+
             setListaFrutas([
                 ...listaFrutas,
-                {nombreFruta:fruta, nombreDescripcion:descripcion}
+                {nombreFruta:fruta, nombreDescripcion:descripcion, id:data.id}
             ])
 
             setFruta('')
@@ -49,9 +69,9 @@ const Formulario = () => {
                 <ul className='list-group'>
                     {
                         listaFrutas.map(item =>(
-                            <li className='list-group-item'>
-                                <span className='lead'>{item.nombreFruta}{item.nombreDescripcion}</span>
-                                
+                            <li className='list-group-item' key={item.id}>
+                                <span className='lead'>{item.nombreFruta} - {item.nombreDescripcion}</span>
+                                <button className='btn btn-danger btn-sm float-end mx-2' onClick={()=>eliminar(item.id)}>Eliminar</button>
                             </li>
                         ))
                     }

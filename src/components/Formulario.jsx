@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { db } from '../firebase'
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 
@@ -8,23 +8,31 @@ const Formulario = () => {
     const[descripcion, setDescription] = useState('');
     const[listaFrutas, setListaFrutas] = useState([])
 
+    useEffect(()=>{
+        onSnapshot(collection(db,'frutas'),(snapshot)=>{
+            setListaFrutas(snapshot.docs.map(doc =>doc.data()))
+        }
+        ) 
+    }, [fruta])
+
     const guardarFrutas = async(e) =>{
         e.preventDefault()
 
         try {
 
-            const nuevaFruta ={
+           
+            await addDoc(collection(db, 'frutas'),{
                 nombreFruta: fruta,
                 nombreDescripcion: descripcion
-            }
-
-            await addDoc(collection(db, 'frutas'),{
-                frutas:nuevaFruta 
             })
             setListaFrutas([
                 ...listaFrutas,
                 {nombreFruta:fruta, nombreDescripcion:descripcion}
             ])
+
+            setFruta('')
+            setDescription('')
+            e.target.reset()
             
         } catch (error) {
             console.log(error)
@@ -39,7 +47,14 @@ const Formulario = () => {
             <div className='col-8'>
                 <h4 className='text-center'>Listado de Frutas</h4>
                 <ul className='list-group'>
-
+                    {
+                        listaFrutas.map(item =>(
+                            <li className='list-group-item'>
+                                <span className='lead'>{item.nombreFruta}{item.nombreDescripcion}</span>
+                                
+                            </li>
+                        ))
+                    }
                 </ul>
             </div>
         <div className='col-4'>
